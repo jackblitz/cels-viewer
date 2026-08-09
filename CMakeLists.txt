@@ -48,18 +48,26 @@ target_link_libraries(cels_viewer PRIVATE
     ${CURSES_LIBRARIES}
 )
 
-# Test executable
-add_executable(test_app tests/test_app.c src/app.c)
-target_include_directories(test_app PRIVATE
+# cels_tests: CLI test harness (vendored greatest framework). Each feature
+# under tests/features/ contributes a suite; run one with
+# `cels_tests -s <suite>`. Links libcurl so linking checks resolve.
+add_executable(cels_tests
+    tests/cli/main.c
+    tests/features/foundation_suite.c
+    src/app.c
+)
+target_include_directories(cels_tests PRIVATE
     include
     vendor/cJSON
+    vendor/greatest
     ${CURSES_INCLUDE_DIRS}
 )
-target_link_libraries(test_app PRIVATE
+target_link_libraries(cels_tests PRIVATE
     cjson
+    libcurl
     ${CURSES_LIBRARIES}
 )
 
-set_target_properties(cels_viewer test_app PROPERTIES
+set_target_properties(cels_viewer cels_tests PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${APP_OUTPUT_DIR}
 )
