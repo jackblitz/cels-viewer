@@ -1,9 +1,15 @@
-#include <stdio.h>
-#include <ncurses.h>
-#include <curl/curl.h>
-#include <cJSON.h>
+#include "app.h"
 
-int main(void) {
-    printf("Cels Viewer - Build System Test\n");
+int main(void)
+{
+    App *app = app_create();
+    if (!app) {
+        fprintf(stderr, "Failed to create application\n");
+        return 1;
+    }
+
+    app_run(app);
+    app_destroy(app);
+
     return 0;
 }
