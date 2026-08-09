@@ -7,3 +7,6 @@
 [submodule "vendor/ncurses"]
 	path = vendor/ncurses
 	url = https://github.com/urbanspr1nter/ncurses-mirror
+[submodule "vendor/greatest"]
+	path = vendor/greatest
+	url = https://github.com/silentbicycle/greatest
