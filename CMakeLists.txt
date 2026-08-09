@@ -10,16 +10,19 @@ set(CMAKE_C_EXTENSIONS OFF)
 add_compile_options(-Wall -Wextra -Wpedantic)
 
 # Output directories
-# Set runtime output to build/debug or build/release
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Debug)
 endif()
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/build/${CMAKE_BUILD_TYPE})
+string(TOLOWER "${CMAKE_BUILD_TYPE}" build_type_lower)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/out)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/out)
 
+
 # Dependencies
+# Force static linking for vendored libraries
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
+
 # cJSON: Simple target-based integration
 add_subdirectory(vendor/cJSON)
 
@@ -37,6 +40,7 @@ find_package(Curses REQUIRED)
 
 # Executable
 add_executable(cels_viewer src/main.c)
+set_target_properties(cels_viewer PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/build/${build_type_lower})
 
 # Include directories
 target_include_directories(cels_viewer PRIVATE 
