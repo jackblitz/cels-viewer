@@ -48,18 +48,20 @@ target_link_libraries(cels_viewer PRIVATE
     ${CURSES_LIBRARIES}
 )
 
-# Test executable
-add_executable(test_app tests/test_app.c src/app.c)
-target_include_directories(test_app PRIVATE
+# Foundation smoke test: app lifecycle + dependency linking (issue #44).
+# Links libcurl as well so the test can prove the vendored deps resolve.
+add_executable(test_foundation tests/features/test_foundation.c src/app.c)
+target_include_directories(test_foundation PRIVATE
     include
     vendor/cJSON
     ${CURSES_INCLUDE_DIRS}
 )
-target_link_libraries(test_app PRIVATE
+target_link_libraries(test_foundation PRIVATE
     cjson
+    libcurl
     ${CURSES_LIBRARIES}
 )
 
-set_target_properties(cels_viewer test_app PROPERTIES
+set_target_properties(cels_viewer test_foundation PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${APP_OUTPUT_DIR}
 )
