@@ -27,10 +27,12 @@ cels-viewer/
 
 ## 🛠 Build Instructions
 
-The project uses CMake. Binaries are output to `build/debug` and `build/release`.
+The project uses CMake presets. Application binaries (`cels_viewer`, `test_app`)
+are output to `build/debug` or `build/release`; all other build artifacts
+(CMake files, object files, vendored libraries) go to `out/debug` or `out/release`.
 
 ```bash
-mkdir build && cd build
-cmake ..
-make
+cmake --preset debug          # or: release
+cmake --build --preset debug  # or: release
+./build/debug/cels_viewer
 ```

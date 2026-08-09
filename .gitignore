@@ -1,0 +1,14 @@
+# Build directories - final binaries in build/debug or build/release
+build/debug/
+build/release/
+out/
+
+# IDE
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
