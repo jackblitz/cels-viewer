@@ -6,52 +6,60 @@ set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS OFF)
 
-# Compiler flags
-add_compile_options(-Wall -Wextra -Wpedantic)
-
-# Output directories
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Debug)
 endif()
 
+# Application binaries go to build/<config>. Everything else (CMake files,
+# object files, vendored libraries) stays in the CMake binary dir, which the
+# presets place under out/<config> — configure with `cmake --preset debug`.
 string(TOLOWER "${CMAKE_BUILD_TYPE}" build_type_lower)
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/out)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/out)
+set(APP_OUTPUT_DIR ${CMAKE_SOURCE_DIR}/build/${build_type_lower})
 
-
-# Dependencies
-# Force static linking for vendored libraries
+# --- Vendored dependencies: static libraries only ---
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
 
-# cJSON: Simple target-based integration
-add_subdirectory(vendor/cJSON)
+# cJSON: skip its test executables
+set(ENABLE_CJSON_TEST OFF CACHE BOOL "" FORCE)
+add_subdirectory(vendor/cJSON EXCLUDE_FROM_ALL)
 
-# curl: Complex build, we only need the library
-# We disable tests and docs to speed up and avoid issues
-set(BUILD_TESTING OFF CACHE INTERNAL "")
-set(BUILD_CURL_SAMPLES OFF CACHE INTERNAL "")
-set(BUILD_CURL_DOCS OFF CACHE INTERNAL "")
-add_subdirectory(vendor/curl)
+# curl: libcurl only — no curl CLI, tests, or install targets
+set(BUILD_CURL_EXE OFF CACHE BOOL "" FORCE)
+set(BUILD_TESTING OFF CACHE BOOL "" FORCE)
+set(CURL_DISABLE_INSTALL ON CACHE BOOL "" FORCE)
+add_subdirectory(vendor/curl EXCLUDE_FROM_ALL)
 
-# ncurses: No CMakeLists.txt provided by upstream.
-# For now, we use the system ncurses as a fallback to make the build system work,
-# but we will look for a way to vendor it properly.
+# ncurses
 find_package(Curses REQUIRED)
 
-# Executable
-add_executable(cels_viewer src/main.c)
-set_target_properties(cels_viewer PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/build/${build_type_lower})
+# Warnings for our own targets only (declared after the vendored deps)
+add_compile_options(-Wall -Wextra -Wpedantic)
 
-# Include directories
-target_include_directories(cels_viewer PRIVATE 
-    include 
+# Main executable
+add_executable(cels_viewer src/main.c src/app.c)
+target_include_directories(cels_viewer PRIVATE
+    include
     vendor/cJSON
     ${CURSES_INCLUDE_DIRS}
 )
-
-# Link libraries
-target_link_libraries(cels_viewer PRIVATE 
-    cjson 
-    libcurl 
+target_link_libraries(cels_viewer PRIVATE
+    cjson
+    libcurl
     ${CURSES_LIBRARIES}
+)
+
+# Test executable
+add_executable(test_app tests/test_app.c src/app.c)
+target_include_directories(test_app PRIVATE
+    include
+    vendor/cJSON
+    ${CURSES_INCLUDE_DIRS}
+)
+target_link_libraries(test_app PRIVATE
+    cjson
+    ${CURSES_LIBRARIES}
+)
+
+set_target_properties(cels_viewer test_app PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${APP_OUTPUT_DIR}
 )
